@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../../allennlp')
 import argparse
 import json
 import logging
@@ -15,7 +13,7 @@ import numpy
 import torch
 
 from allennlp.common.tqdm import Tqdm
-from allennlp.common.util import lazy_groups_of, prepare_global_logging
+from allennlp.common.util import lazy_groups_of
 from allennlp.common.checks import ConfigurationError
 from allennlp.data.token_indexers.elmo_indexer import ELMoTokenCharactersIndexer
 from allennlp.nn.util import remove_sentence_boundaries

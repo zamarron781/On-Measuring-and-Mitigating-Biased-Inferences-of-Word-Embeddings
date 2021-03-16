@@ -20,9 +20,7 @@ parser.add_argument('--dir', help="Path to the data dir", default="data/snli_1.0
 parser.add_argument('--data', help="Path to validation data hdf5 file.", default="snli-val.hdf5")
 parser.add_argument('--res', help="Path to training resource files, seperated by comma.", default="")
 parser.add_argument('--word_vecs', help="The path to word embeddings", default = "glove.hdf5")
-parser.add_argument('--char_idx', help="The path to word2char index file", default = "char.idx.hdf5")
 parser.add_argument('--dict', help="The path to word dictionary", default = "snli.word.dict")
-parser.add_argument('--char_dict', help="The path to char dictionary", default = "char.dict.txt")
 parser.add_argument('--load_file', help="Path to where model to be loaded.", default="")
 # for bias
 parser.add_argument('--debias', help="Whether to debias embeddings", type=int, default=0)
@@ -45,11 +43,6 @@ parser.add_argument('--rnn_type', help="What type of rnn to use, default lstm", 
 parser.add_argument('--birnn', help="Whether to use bidirectional rnn", type=int, default=1)
 parser.add_argument('--num_label', help="The number of prediction labels", type=int, default=3)
 # dimensionality
-parser.add_argument('--use_char_enc', help="Whether to use char encoding", type=int, default=0)
-parser.add_argument('--char_filters', help="The list of filters for char cnn", default='5')
-parser.add_argument('--num_char', help="The number of distinct chars", type=int, default=61)
-parser.add_argument('--char_emb_size', help="The input char embedding dim", type=int, default=20)
-parser.add_argument('--char_enc_size', help="The input char encoding dim", type=int, default=100)
 parser.add_argument('--hidden_size', help="The general hidden size of the pipeline", type=int, default=200)
 parser.add_argument('--cls_hidden_size', help="The hidden size of the classifier", type=int, default=200)
 parser.add_argument('--word_vec_size', help="The input word embedding dim", type=int, default=300)
@@ -63,16 +56,8 @@ parser.add_argument('--dynamic_elmo', help="Whether to use elmo model to parse t
 parser.add_argument('--elmo_dropout', help="The dropout probability on ELMO", type=float, default=0.0)
 parser.add_argument('--elmo_blend', help="The type of blending function for elmo, e.g. interpolate/concat", default="interpolate")
 parser.add_argument('--use_elmo_only', help="Whether to use elmo only, i.e. ignore glove.", type=int, default="0")
-# hacky specs
-parser.add_argument('--swap_sent', help="Whether to swap sentence pairs", type=int, default=0)
 parser.add_argument('--pred_output', help="The prefix to the path of prediction output", default='pred')
 
-# hacky sw
-def swap_sent(source, target, char_source, char_target, batch_ex_idx, batch_l, source_l, target_l, label, res_map):
-	if res_map is not None and 'elmo_src' in res_map:
-		res_map['elmo_src'], res_map['elmo_tgt'] = res_map['elmo_tgt'], res_map['elmo_src']
-
-	return target, source, char_target, char_source, batch_ex_idx, batch_l, target_l, source_l, label, res_map
 
 def evaluate(opt, shared, m, data):
 	m.train(False)
@@ -89,25 +74,18 @@ def evaluate(opt, shared, m, data):
 	loss.begin_pass()
 	m.begin_pass()
 	for i in range(data_size):
-		(data_name, source, target, char_source, char_target, 
+		(data_name, source, target,
 			batch_ex_idx, batch_l, source_l, target_l, label, res_map) = data[val_idx[i]]
-
-		if opt.swap_sent == 1:
-			(source, target, char_source, char_target, 
-				batch_ex_idx, batch_l, source_l, target_l, label, res_map) = swap_sent(source, target, char_source, char_target, 
-				batch_ex_idx, batch_l, source_l, target_l, label, res_map)
 
 		wv_idx1 = Variable(source, requires_grad=False)
 		wv_idx2 = Variable(target, requires_grad=False)
-		cv_idx1 = Variable(char_source, requires_grad=False)
-		cv_idx2 = Variable(char_target, requires_grad=False)
 		y_gold = Variable(label, requires_grad=False)
 
 		# update network parameters
 		m.update_context(batch_ex_idx, batch_l, source_l, target_l, res_map)
 
 		# forward pass
-		pred = m.forward(wv_idx1, wv_idx2, cv_idx1, cv_idx2)
+		pred = m.forward(wv_idx1, wv_idx2)
 
 		# loss
 		batch_loss = loss(pred, y_gold)
@@ -133,9 +111,7 @@ def main(args):
 	opt.data = opt.dir + opt.data
 	opt.res = '' if opt.res == ''  else ','.join([opt.dir + path for path in opt.res.split(',')])
 	opt.word_vecs = opt.dir + opt.word_vecs
-	opt.char_idx = opt.dir + opt.char_idx
 	opt.dict = opt.dir + opt.dict
-	opt.char_dict = opt.dir + opt.char_dict
 	opt.bias_glove = opt.dir + opt.bias_glove
 	opt.bias_elmo = opt.dir + opt.bias_elmo
 

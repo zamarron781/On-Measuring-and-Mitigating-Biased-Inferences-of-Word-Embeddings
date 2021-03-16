@@ -8,7 +8,7 @@ from torch.autograd import Variable
 from holder import *
 from util import *
 from locked_dropout import *
-from allennlp.commands.elmo import ElmoEmbedder
+from allennlp.modules.elmo import _ElmoCharacterEncoder as ElmoEmbedder
 from elmo_bias import *
 from elmo_embedder_debias import *
 

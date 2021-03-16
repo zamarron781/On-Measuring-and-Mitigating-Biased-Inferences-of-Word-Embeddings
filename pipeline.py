@@ -16,7 +16,6 @@ from torch.autograd import Variable
 import numpy as np
 from optimizer import *
 from embeddings import *
-from char_embeddings import *
 import time
 
 class Pipeline(torch.nn.Module):
@@ -27,8 +26,6 @@ class Pipeline(torch.nn.Module):
 		self.opt = opt
 
 		self.embeddings = Embeddings(opt, shared)
-		if opt.use_char_enc == 1:
-			self.char_embeddings = CharEmbeddings(opt, shared)
 
 		if opt.encoder == 'proj':
 			self.encoder = ProjEncoder(opt, shared)
@@ -90,15 +87,7 @@ class Pipeline(torch.nn.Module):
 			print('uninitialized fields: {0}'.format(missed_names))
 
 
-	def forward(self, token1, token2, char1, char2):
-		shared = self.shared
-
-		if self.opt.use_char_enc == 1:
-			char1 = self.char_embeddings(char1)	# (batch_l, context_l, token_l, char_emb_size)
-			char2 = self.char_embeddings(char2)	# (batch_l, response_l, token_l, char_emb_size)
-		else:
-			char1, char2 = None, None
-
+	def forward(self, token1, token2):
 		token1 = self.embeddings(token1)	# (batch_l, context_l, word_vec_size)
 		token2 = self.embeddings(token2)	# (batch_l, response_l, word_vec_size)
 

@@ -25,9 +25,7 @@ parser.add_argument('--val_data', help="Path to validation data hdf5 file.", def
 parser.add_argument('--train_res', help="Path to training resource files, seperated by comma.", default="")
 parser.add_argument('--val_res', help="Path to validation resource files, seperated by comma.", default="")
 parser.add_argument('--word_vecs', help="The path to word embeddings", default = "glove.hdf5")
-parser.add_argument('--char_idx', help="The path to word2char index file", default = "char.idx.hdf5")
 parser.add_argument('--dict', help="The path to word dictionary", default = "snli.word.dict")
-parser.add_argument('--char_dict', help="The path to char dictionary", default = "char.dict.txt")
 parser.add_argument('--save_file', help="Path to where model to be saved.", default="model")
 # for bias
 parser.add_argument('--debias', help="Whether to debias embeddings", type=int, default=0)
@@ -56,11 +54,6 @@ parser.add_argument('--seed', help="The random seed", type=int, default=3435)
 parser.add_argument('--gpuid', help="The GPU index, if -1 then use CPU", type=int, default=-1)
 parser.add_argument('--acc_batch_size', help="The accumulative batch size, -1 to disable", type=int, default=-1)
 # dimensionality
-parser.add_argument('--use_char_enc', help="Whether to use char encoding", type=int, default=0)
-parser.add_argument('--char_filters', help="The list of filters for char cnn", default='5')
-parser.add_argument('--num_char', help="The number of distinct chars", type=int, default=61)
-parser.add_argument('--char_emb_size', help="The input char embedding dim", type=int, default=20)
-parser.add_argument('--char_enc_size', help="The input char encoding dim", type=int, default=100)
 parser.add_argument('--hidden_size', help="The general hidden size of the pipeline", type=int, default=200)
 parser.add_argument('--cls_hidden_size', help="The hidden size of the classifier", type=int, default=200)
 parser.add_argument('--word_vec_size', help="The input word embedding dim", type=int, default=300)
@@ -109,13 +102,11 @@ def train_epoch(opt, shared, m, optim, ema, data, epoch_id, sub_idx):
 	loss.begin_pass()
 	m.begin_pass()
 	for i in range(data_size):
-		(data_name, source, target, char_source, char_target, 
+		(data_name, source, target,
 			batch_ex_idx, batch_l, source_l, target_l, label, res_map) = data[batch_order[i]]
 
 		wv_idx1 = Variable(source, requires_grad=False)
 		wv_idx2 = Variable(target, requires_grad=False)
-		cv_idx1 = Variable(char_source, requires_grad=False)
-		cv_idx2 = Variable(char_target, requires_grad=False)
 		y_gold = Variable(label, requires_grad=False)
 
 		# update network parameters
@@ -123,7 +114,7 @@ def train_epoch(opt, shared, m, optim, ema, data, epoch_id, sub_idx):
 		m.update_context(batch_ex_idx, batch_l, source_l, target_l, res_map)
 
 		# forward pass
-		output = m.forward(wv_idx1, wv_idx2, cv_idx1, cv_idx2)
+		output = m.forward(wv_idx1, wv_idx2)
 
 		# loss
 		batch_loss = loss(output, y_gold)
@@ -241,20 +232,18 @@ def validate(opt, shared, m, val_data, val_idx):
 	loss.begin_pass()
 	m.begin_pass()
 	for i in range(data_size):
-		(data_name, source, target, char_source, char_target, 
+		(data_name, source, target,
 			batch_ex_idx, batch_l, source_l, target_l, label, res_map) = val_data[val_idx[i]]
 
 		wv_idx1 = Variable(source, requires_grad=False)
 		wv_idx2 = Variable(target, requires_grad=False)
-		cv_idx1 = Variable(char_source, requires_grad=False)
-		cv_idx2 = Variable(char_target, requires_grad=False)
 		y_gold = Variable(label, requires_grad=False)
 
 		# update network parameters
 		m.update_context(batch_ex_idx, batch_l, source_l, target_l, res_map)
 
 		# forward pass
-		pred = m.forward(wv_idx1, wv_idx2, cv_idx1, cv_idx2)
+		pred = m.forward(wv_idx1, wv_idx2)
 
 		# loss
 		batch_loss = loss(pred, y_gold)
@@ -282,9 +271,7 @@ def main(args):
 	opt.train_res = '' if opt.train_res == ''  else ','.join([opt.dir + path for path in opt.train_res.split(',')])
 	opt.val_res = '' if opt.val_res == ''  else ','.join([opt.dir + path for path in opt.val_res.split(',')])
 	opt.word_vecs = opt.dir + opt.word_vecs
-	opt.char_idx = opt.dir + opt.char_idx
 	opt.dict = opt.dir + opt.dict
-	opt.char_dict = opt.dir + opt.char_dict
 	opt.bias_glove = opt.dir + opt.bias_glove
 	opt.bias_elmo = opt.dir + opt.bias_elmo
 	opt.contract_v1 = opt.dir + opt.contract_v1

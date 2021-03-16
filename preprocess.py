@@ -290,7 +290,7 @@ def main(arguments):
 	
 	parser.add_argument('--batch_size', help="Size of each minibatch.", type=int, default=32)
 	parser.add_argument('--max_seq_l', help="Maximum sequence length. Sequences longer than this are dropped.", type=int, default=100)
-	parser.add_argument('--output', help="Prefix of the output file names. ", type=str, default = "data/nli_bias/snli")
+	parser.add_argument('--output', help="Prefix of the output file names. ", type=str, default = "snli")
 	parser.add_argument('--shuffle', help="If = 1, shuffle sentences before sorting (based on source length).", type = int, default = 1)
 	parser.add_argument('--seed', help="The random seed", type = int, default = 1)
 	parser.add_argument('--glove', type = str, default = '')
@@ -306,6 +306,7 @@ def main(arguments):
 	opt.label = opt.dir + opt.label
 	opt.label_val = opt.dir + opt.label_val
 	opt.label_test = opt.dir + opt.label_test
+	opt.output = opt.dir + opt.output
 
 	process(opt)
 

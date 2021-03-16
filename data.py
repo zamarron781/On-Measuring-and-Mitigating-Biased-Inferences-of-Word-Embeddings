@@ -32,16 +32,6 @@ class Data():
 		self.target = torch.from_numpy(self.target)
 		self.label = torch.from_numpy(self.label)
 
-		# load char_idx file
-		if opt.use_char_enc == 1:
-			print('loading char idx from {0}'.format(opt.char_idx))
-			f = h5py.File(opt.char_idx, 'r')
-			self.char_idx = f['char_idx'][:]
-			self.char_idx = torch.from_numpy(self.char_idx)
-			assert(self.char_idx.shape[1] == opt.token_l)
-			assert(self.char_idx.max()+1 == opt.num_char)
-			print('{0} chars found'.format(self.char_idx.max()+1))
-
 		self.batches = []
 		for i in range(self.length):
 			start = self.batch_idx[i]
@@ -248,19 +238,8 @@ class Data():
 			batch_l, source_l, target_l, label) = self.batches[idx]
 		token_l = self.opt.token_l
 
-		# get char indices
-		# 	the back forth data transfer should be eliminated
-		if self.opt.use_char_enc == 1:
-			char1 = self.char_idx[all_source.contiguous().view(-1)].view(batch_l, source_l, token_l)
-			char2 = self.char_idx[all_target.contiguous().view(-1)].view(batch_l, target_l, token_l)
-		else:
-			char1, char2 = None, None
-
 		# transfer to gpu if needed
 		if self.opt.gpuid != -1:
-			if self.opt.use_char_enc == 1:
-				char1 = char1.cuda()
-				char2 = char2.cuda()
 			source = source.cuda()
 			target = target.cuda()
 			label = label.cuda()
@@ -270,7 +249,7 @@ class Data():
 
 		res_map = self.__get_res(idx)
 
-		return (self.data_name, source, target, char1, char2, 
+		return (self.data_name, source, target,
 			batch_ex_idx, batch_l, source_l, target_l, label, res_map)
 
 

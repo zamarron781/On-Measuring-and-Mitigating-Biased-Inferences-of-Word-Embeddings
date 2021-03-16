@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../../allennlp')
 import json
 import logging
 from typing import Union, List, Dict, Any
@@ -23,7 +21,7 @@ from allennlp.modules.highway import Highway
 from allennlp.modules.scalar_mix import ScalarMix
 from allennlp.nn.util import remove_sentence_boundaries, add_sentence_boundary_token_ids, get_device_of
 from allennlp.data.token_indexers.elmo_indexer import ELMoCharacterMapper, ELMoTokenCharactersIndexer
-from allennlp.data.dataset import Batch
+from allennlp.data import Batch
 from allennlp.data import Token, Vocabulary, Instance
 from allennlp.data.fields import TextField
 from allennlp.modules.elmo import _ElmoCharacterEncoder
