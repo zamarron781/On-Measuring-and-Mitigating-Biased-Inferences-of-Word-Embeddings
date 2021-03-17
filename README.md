@@ -28,11 +28,11 @@ python3 get_pretrain_vecs.py --glove ./data/glove.840B.300d.txt --dict ./data/nl
 For unlabeled data (i.e. bias probing data), preprocess like this:
 ```
 DATA_NAME=occupation_gender_templates.stitch
-python3 preprocess_unlabeled.py --glove ./data/glove.840B.300d.txt --batch_size 48 --dir ./data/nli_bias_aaai2020/ \
+python3 preprocess_unlabeled.py --glove ./data/glove.840B.300d.txt --batch_size 48 --dir ./data/nli_bias/ \
 	--sent1 ${DATA_NAME}.sent1.txt --sent2 ${DATA_NAME}.sent2.txt \
-	--vocab ./data/nli_bias_aaai2020/snli.word.dict --vocab_all ./data/nli_bias_aaai2020/snli.allword.dict \
+	--vocab ./data/nli_bias/snli.word.dict --vocab_all ./data/nli_bias/snli.allword.dict \
 	--output ${DATA_NAME}
-python3 get_pretrain_vecs.py --glove ./data/glove.840B.300d.txt --dict ./data/nli_bias_aaai2020/${DATA_NAME}.word.dict \
+python3 get_pretrain_vecs.py --glove ./data/glove.840B.300d.txt --dict ./data/nli_bias/${DATA_NAME}.word.dict \
 	--output ./data/${DATA_NAME}.glove
 
 ```
