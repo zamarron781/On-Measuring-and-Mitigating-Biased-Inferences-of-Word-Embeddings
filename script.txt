@@ -1,4 +1,4 @@
-
+import Reac, { useContext } 
 python3 preprocess.py --glove ./data/glove.840B.300d.txt --batch_size 48 --dir ./data/nli_bias_aaai2020/ --output snli
 python3 get_pretrain_vecs.py --glove ./data/glove.840B.300d.txt --dict ./data/nli_bias_aaai2020/snli.word.dict \
 	--output ./data/snli.glove
@@ -35,5 +35,7 @@ python3 -u predict_unlabeled.py --gpuid 0 --dir data/nli_bias_aaai2020/ \
 	--data ${DATA_NAME}.hdf5 --res ${DATA_NAME}.sent1.txt,${DATA_NAME}.sent2.txt,${DATA_NAME}.x_pair.txt \
 	--word_vecs ${DATA_NAME}.glove.hdf5 --dict ${DATA_NAME}.word.dict \
 	--encoder rnn --use_elmo_post 0 \
-	--pred_output models/${DATA_NAME}.pred.txt \
+	--pred_output models/${DATA_NAME}.pred.txt \co trol + Shift + m
+tab
+esc tab
 	--load_file $MODEL
